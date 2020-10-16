@@ -3,8 +3,19 @@
 #include <fstream>
 #include <vector>
 
+struct Author
+{
+	std::string surname;
+	std::string name_pathronymic;
+};
+
 struct Publication
 {
+	std::string type;
+	std::string title;
+	std::string year_pub;
+	std::string pub_house;
+	std::vector<Author> authors;
 
 };
 
@@ -46,12 +57,17 @@ int main()
 
 				while ((next = input.find(delim, prev)) != std::string::npos) 
 				{
-					if (input.substr(prev, next - prev) != std::string())
-						arr.push_back(input.substr(prev, next - prev));
+					arr.push_back(input.substr(prev, next - prev));
 					prev = next + delta;
 				}
-				if (input.substr(prev, next - prev) != std::string())
-					arr.push_back(input.substr(prev));
+				arr.push_back(input.substr(prev));
+				int i{};
+				for (i = arr.size() - 1; i >= 0; i--)
+				{
+					if (arr[i].length())
+						break;
+				}
+				arr.erase(arr.begin() + i + 1, arr.end());
 				for (size_t i = 0; i < arr.size(); i++)
 				{
 					if (arr[i][0] == '\"')
