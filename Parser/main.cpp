@@ -87,14 +87,14 @@ int main(int argc, char* argv[])
 			}
 			if (num.size() == 8) /*опознаем начало информации о публикации по id - восьмизначному*/
 			{
-				/*if (arr[1] == "https://elibrary.ru/item.asp?id=26447305")
+				if (arr[1] == "https://elibrary.ru/item.asp?id=26356429")
 				{
 					std::cout << counter << std::endl;
 					for (size_t i = 0; i < arr.size(); i++)
 					{
 						std::cout << i << ": " << arr[i] << std::endl;
 					}
-				}*/
+				}
 
 				is_title_write = parse_vector(arr, pub_arr);
 			}
@@ -157,6 +157,15 @@ int main(int argc, char* argv[])
 	}
 	ofs.close();
 
+	for (auto& i : pub_arr)
+	{
+		if (i.authors.size() == 0)
+		{
+			i.print();
+			std::cout << std::endl;
+		}
+	}
+
 	return bool(std::cout);
 }
 
@@ -183,7 +192,7 @@ std::vector<std::string> delim_string(const std::string& to_delim)
 	arr.erase(arr.begin() + i + 1, arr.end());
 	for (size_t i = 0; i < arr.size(); i++)
 	{
-		if (arr[i][0] == '\"')
+		if (arr[i][0] == '\"' && arr[i][arr[i].length() - 1] != '\"')
 		{
 			std::string tmp{ arr[i] };
 			int j = i + 1;
@@ -246,7 +255,7 @@ bool parse_vector(const std::vector<std::string>& arr, std::vector<Publication>&
 	int counter{ 1 };
 	for (size_t i = 16; i < arr.size() - 3; i++)
 	{
-		if (arr[i] == std::to_string(counter) && arr[i + 1] == "RU")
+		if (arr[i] == std::to_string(counter) && arr[i + 1] == "RU" && arr[i + 2].length() < 48)
 		{
 			a.surname = arr[i + 2];
 			a.name_pathronymic = arr[i + 3];
