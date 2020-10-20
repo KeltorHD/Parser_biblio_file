@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <boost/lexical_cast.hpp>
 
 struct Author
 {
@@ -87,14 +88,14 @@ int main(int argc, char* argv[])
 			}
 			if (num.size() == 8) /*опознаем начало информации о публикации по id - восьмизначному*/
 			{
-				if (arr[1] == "https://elibrary.ru/item.asp?id=26356429")
+				/*if (arr[1] == "https://elibrary.ru/item.asp?id=26356429")
 				{
 					std::cout << counter << std::endl;
 					for (size_t i = 0; i < arr.size(); i++)
 					{
 						std::cout << i << ": " << arr[i] << std::endl;
 					}
-				}
+				}*/
 
 				is_title_write = parse_vector(arr, pub_arr);
 			}
@@ -129,14 +130,14 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		/*if (counter == 11365)
+		if (counter == 1187)
 		{
-			std::vector<std::string> arr{ delim_string(input) };
 			for (size_t i = 0; i < arr.size(); i++)
 			{
 				std::cout << i << ": " << arr[i] << std::endl;
 			}
-		}*/
+			std::cout << input << std::endl;
+		}
 
 		counter++;
 	}
@@ -189,17 +190,22 @@ std::vector<std::string> delim_string(const std::string& to_delim)
 		if (arr[i].length())
 			break;
 	}
+
+	if (i < 0) i = 0;
 	arr.erase(arr.begin() + i + 1, arr.end());
 	for (size_t i = 0; i < arr.size(); i++)
 	{
-		if (arr[i][0] == '\"' && arr[i][arr[i].length() - 1] != '\"')
+		int count_qm{ int(std::count(arr[i].begin(), arr[i].end(), '\"')) };
+		if (count_qm % 2 != 0 && arr[i][0] == '\"')
 		{
 			std::string tmp{ arr[i] };
 			int j = i + 1;
+			int count_qm_find{};
 			for (; j < arr.size(); j++)
 			{
+				count_qm_find = std::count(arr[j].begin(), arr[j].end(), '\"');
 				tmp += arr[j];
-				if (arr[j][arr[j].size() - 1] == '\"')
+				if (count_qm_find % 2 != 0)
 				{
 					break;
 				}
@@ -272,7 +278,7 @@ bool parse_vector(const std::vector<std::string>& arr, std::vector<Publication>&
 		}
 	}
 
-	if (!p.authors.size())
+	if (!p.authors.size()) /*если нет авторов русских*/
 	{
 		for (size_t i = 16; i < arr.size() - 3; i++)
 		{
@@ -282,6 +288,42 @@ bool parse_vector(const std::vector<std::string>& arr, std::vector<Publication>&
 				a.name_pathronymic = arr[i + 3];
 				p.authors.push_back(a);
 				counter++;
+			}
+		}
+	}
+	if (!p.authors.size()) /*если авторы не с первого*/
+	{
+		int counter{ -1 };
+		for (size_t i = 16; i < arr.size() - 3; i++)
+		{
+			if (counter < 0)
+			{
+				try
+				{
+					int lex = boost::lexical_cast<int>(arr[i]);
+					if (arr[i + 1] == "RU")
+					{
+						counter = lex;
+						a.surname = arr[i + 2];
+						a.name_pathronymic = arr[i + 3];
+						p.authors.push_back(a);
+						counter++;
+					}
+				}
+				catch (...)
+				{
+					continue;
+				}
+			}
+			else
+			{
+				if (arr[i] == std::to_string(counter) && arr[i + 1] == "RU")
+				{
+					a.surname = arr[i + 2];
+					a.name_pathronymic = arr[i + 3];
+					p.authors.push_back(a);
+					counter++;
+				}
 			}
 		}
 	}
