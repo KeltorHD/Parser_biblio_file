@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 			}
 			if (num.size() == 8) /*опознаем начало информации о публикации по id - восьмизначному*/
 			{
-				/*if (arr[1] == "https://elibrary.ru/item.asp?id=26356429")
+				/*if (arr[1] == "https://elibrary.ru/item.asp?id=42531043")
 				{
 					std::cout << counter << std::endl;
 					for (size_t i = 0; i < arr.size(); i++)
@@ -100,18 +100,7 @@ int main(int argc, char* argv[])
 				is_title_write = parse_vector(arr, pub_arr);
 			}
 		}
-		else
-		{
-			if (!is_title_write)
-			{
-				/*for (size_t i = 0; i < arr.size(); i++)
-				{
-					std::cout << i << ": " << arr[i] << std::endl;
-				}*/
-
-				is_title_write = parse_vector_deferred(arr, pub_arr);
-			}
-		}
+		is_title_write = parse_vector_deferred(arr, pub_arr);
 
 		for (size_t i = 0; i < arr.size(); i++)
 		{
@@ -130,14 +119,13 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		if (counter == 1187)
+		/*if (counter == 9376)
 		{
 			for (size_t i = 0; i < arr.size(); i++)
 			{
 				std::cout << i << ": " << arr[i] << std::endl;
 			}
-			std::cout << input << std::endl;
-		}
+		}*/
 
 		counter++;
 	}
@@ -158,14 +146,26 @@ int main(int argc, char* argv[])
 	}
 	ofs.close();
 
-	for (auto& i : pub_arr)
+	/*for (auto& i : pub_arr)
 	{
-		if (i.authors.size() == 0)
+		if (i.title == "3")
 		{
 			i.print();
 			std::cout << std::endl;
 		}
+	}*/
+	/*int len_min{ INT_MAX };
+	Publication* p{};
+	for (auto& i : pub_arr)
+	{
+		if (i.title.length() <= len_min)
+		{
+			p = & i;
+			len_min = i.title.length();
+		}
 	}
+	if (p)
+		p->print();*/
 
 	return bool(std::cout);
 }
@@ -190,6 +190,14 @@ std::vector<std::string> delim_string(const std::string& to_delim)
 		if (arr[i].length())
 			break;
 	}
+	/*if (arr[0] == "обеспечение качества деталей")
+	{
+		std::cout << to_delim << std::endl;
+		for (size_t i = 0; i < arr.size(); i++)
+		{
+			std::cout << i << ": " << arr[i] << std::endl;
+		}
+	}*/
 
 	if (i < 0) i = 0;
 	arr.erase(arr.begin() + i + 1, arr.end());
@@ -215,6 +223,15 @@ std::vector<std::string> delim_string(const std::string& to_delim)
 			arr.insert(arr.begin() + i, tmp);
 		}
 	}
+	/*if (arr[0] == "обеспечение качества деталей")
+	{
+		for (size_t i = 0; i < arr.size(); i++)
+		{
+			std::cout << i << ": " << arr[i] << std::endl;
+		}
+		std::cout << arr.size() << std::endl;
+	}*/
+
 	return arr;
 }
 
@@ -245,7 +262,7 @@ bool parse_vector(const std::vector<std::string>& arr, std::vector<Publication>&
 	{
 		for (int i = arr.size() - 1; i >= 0; i--)
 		{
-			if (arr[i] == "RU")
+			if (arr[i] == "RU" && arr[i - 1].length() >= 10)
 			{
 				p.title = arr[i - 1];
 				break;
@@ -334,10 +351,20 @@ bool parse_vector(const std::vector<std::string>& arr, std::vector<Publication>&
 
 bool parse_vector_deferred(const std::vector<std::string>& arr, std::vector<Publication>& pub_arr)
 {
-	if (arr.size() > 132)
+	if (arr.size() > 76)
 	{
-		pub_arr[pub_arr.size() - 1].title = arr[132];
+		if (!pub_arr[pub_arr.size() - 1].title.length() && arr.size() > 132)
+		{
+			if (arr[132].size() >= 10)
+				pub_arr[pub_arr.size() - 1].title = arr[132];
+			else
+				pub_arr[pub_arr.size() - 1].title = arr[136];
+		}
 		int counter = pub_arr[pub_arr.size() - 1].authors.size() + 1;
+		/*if (arr[0] == "обеспечение качества деталей")
+		{
+			std::cout << pub_arr[pub_arr.size() - 1].authors.size() + 1 << std::endl;
+		}*/
 		Author a;
 		for (size_t i = 0; i < arr.size() - 3; i++)
 		{
@@ -377,8 +404,10 @@ void Publication::print(std::ostream& os)
 	os << "Автор(ы):" << std::endl;
 	for (size_t i = 0; i < authors.size(); i++)
 	{
-		os << i + 1 << ": " << authors[i].surname << " " << authors[i].name_pathronymic << std::endl;
+		os << authors[i].surname << " " << authors[i].name_pathronymic;
+		if (i != authors.size() - 1) os << ";";
 	}
+	os << std::endl;
 	os << "Ссылка на издание: " << url << std::endl;
 	if (udk.length()) os << "УДК: " << udk << std::endl;
 	if (isbn.length()) os << "ISBN: " << isbn << std::endl;
